@@ -23,6 +23,7 @@ class CreateSongsTable extends Migration
             $table->string('albumid');
             $table->string('albumname');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

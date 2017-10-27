@@ -19,6 +19,7 @@ class CreateSessionsSpotifyTable extends Migration
             $table->string('state');
             $table->string('type');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
