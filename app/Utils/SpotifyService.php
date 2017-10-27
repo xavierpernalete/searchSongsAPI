@@ -1,8 +1,12 @@
 <?php
 
 namespace App\Utils;
+
 use App\Models\Sessions;
 use App\Models\SessionsSpotify;
+use Carbon\Carbon;
+use SpotifyWebAPI\SpotifyWebAPI;
+
 
 /**
  * Created by PhpStorm.
@@ -18,54 +22,90 @@ class SpotifyService
     protected $authURL = "https://accounts.spotify.com/";
 
 
-    public function makeAuthorizationAPI()
+    public function searchTrack($params)
     {
 
-        $params = $this->assembleRequestAuth();
-        $url = $this->authURL."authorize/?".'scope=user-read-private%20user-read-email&'.http_build_query($params);
+      try {
+          $post = $this->setRequest($params);
+          $access_token = $this->access_token();
+
+          $authorization = "Authorization: Bearer " . $access_token->access_token;
+          $ch = curl_init();
+          curl_setopt($ch, CURLOPT_URL, 'https://api.spotify.com/v1/search?' . http_build_query($post));
+          curl_setopt($ch, CURLOPT_POST, 0);
+          curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+          curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+          curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', $authorization));
+          curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+          $result = curl_exec($ch);
+          curl_close($ch);
+          $result = $this->setSongInformation($result);
+
+          return json_decode($result);
+      }catch (\Exception $e){
 
 
-        $curl = curl_init();
-            curl_setopt_array($curl, array(
-            CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_URL => $url,
-            CURLOPT_USERAGENT => $_SERVER['HTTP_USER_AGENT'],
-            CURLOPT_FOLLOWLOCATION, 0,
-        ));
-        $resp = curl_exec($curl);
-        $redirectURL = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
-        curl_close($curl);
-
-
-        dd($redirectURL, $this->authURL."authorize/?".http_build_query($params).$resp);
-
-
+      }
 
     }
 
-    private function assembleRequestAuth()
+
+    private function access_token()
     {
 
-        $params = array(
-            "response_type" => "code",
-            "client_id" => $this->client_id,
-           // "scope" => "user-read-private%20user-read-email",
-            "redirect_uri" => $this->redirect_uri,
-            "state" => "34fFs29kd09",
 
+        $code = SessionsSpotify::where('created_at', '>=', Carbon::today())->orderby('created_at', 'desc')->first();
+        $base64 = base64_encode($this->client_id . ':' . $this->client_secret);
+        $authorization = "Authorization: Basic " . $base64;
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://accounts.spotify.com/api/token?grant_type=client_credentials');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded', $authorization]);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        return json_decode($result);
+
+    }
+
+    private function setRequest($params)
+    {
+
+        $post = array(
+            "q" => isset($params['search']) ? $params['search'] : '',
+            "type" => isset($params['type']) ? $params['type'] : "track,album"
         );
 
-        return $params;
+        return $post;
+
     }
 
-
-    public function searchTrack()
+    private function setSongInformation($result)
     {
 
-        $auth = $this->makeAuthorizationAPI();
+        $result = json_decode($result);
 
+        $songs = null;
+        foreach ($result->tracks->items as $key => $item) {
+
+            $songs[] = array(
+
+                "url"=> $item->uri,
+                "id"=> $item->id,
+                "songname"=> $item->name,
+                "artistid"=> $item->artists[0]->id,
+                "artistname"=> $item->artists[0]->name,
+                "albumid"=> $item->album->id,
+                "albumname"=> $item->album->name,
+            );
+
+        }
+
+        return json_encode($songs);
 
     }
-
 
 }
