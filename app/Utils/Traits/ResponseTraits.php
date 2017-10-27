@@ -8,24 +8,26 @@ namespace App\Utils\Traits;
  * Time: 5:20 AM
  */
 
-trait ResponseTraits{
+trait ResponseTraits
+{
 
 
-    public function sendResponse($result , $element)
+    public function sendResponse($result, $element)
     {
 
-        if($result != null || !empty($result)){
+        if ($result != null || !empty($result)) {
 
             $response[$element] = $result;
+            $response['status'] = true;
 
             return json_encode($response);
         }
 
         $response[$element] = "Songs no exits , or no found";
+        $response['status'] = false;
         return json_encode($response);
 
     }
-
 
 
 }
