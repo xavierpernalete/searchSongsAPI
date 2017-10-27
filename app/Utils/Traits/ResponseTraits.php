@@ -13,7 +13,15 @@ trait ResponseTraits{
 
     public function sendResponse($result , $element)
     {
-        $response[$element] = $result;
+
+        if($result != null || !empty($result)){
+
+            $response[$element] = $result;
+
+            return json_encode($response);
+        }
+
+        $response[$element] = "Songs no exits , or no found";
         return json_encode($response);
 
     }

@@ -3,7 +3,7 @@
 namespace App\Utils;
 
 use App\Models\Sessions;
-
+use Log;
 
 
 /**
@@ -46,6 +46,36 @@ class SpotifyService
       }
 
     }
+
+
+    public function trackDetails($id)
+    {
+
+        try {
+
+            $access_token = $this->access_token();
+
+            $authorization = "Authorization: Bearer " . $access_token->access_token;
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://api.spotify.com/v1/tracks/'.$id);
+            curl_setopt($ch, CURLOPT_POST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', $authorization));
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+            $result = curl_exec($ch);
+            curl_close($ch);
+            $result = $this->setSongInformationDetaills($result);
+
+            return json_decode($result);
+        }catch (\Exception $e){
+
+            Log::info('Error search by Spotify' . $e->getMessage());
+        }
+
+    }
+
+
 
 
     private function access_token()
@@ -107,5 +137,28 @@ class SpotifyService
         return json_encode($songs);
 
     }
+
+    private function setSongInformationDetaills($result)
+    {
+
+        $result = json_decode($result);
+
+        $songs = null;
+
+            $songs[] = array(
+                "url"=> $result->uri,
+                "id"=> $result->id,
+                "songname"=> $result->name,
+                "artistid"=> $result->artists[0]->id,
+                "artistname"=> $result->artists[0]->name,
+                "albumid"=> $result->album->id,
+                "albumname"=> $result->album->name,
+            );
+
+        return json_encode($songs);
+
+    }
+
+
 
 }
