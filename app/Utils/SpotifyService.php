@@ -3,9 +3,7 @@
 namespace App\Utils;
 
 use App\Models\Sessions;
-use App\Models\SessionsSpotify;
-use Carbon\Carbon;
-use SpotifyWebAPI\SpotifyWebAPI;
+
 
 
 /**
@@ -44,7 +42,7 @@ class SpotifyService
           return json_decode($result);
       }catch (\Exception $e){
 
-
+          Log::info('Error search by Spotify' . $e->getMessage());
       }
 
     }
@@ -52,9 +50,7 @@ class SpotifyService
 
     private function access_token()
     {
-
-
-        $code = SessionsSpotify::where('created_at', '>=', Carbon::today())->orderby('created_at', 'desc')->first();
+        try{
         $base64 = base64_encode($this->client_id . ':' . $this->client_secret);
         $authorization = "Authorization: Basic " . $base64;
 
@@ -68,6 +64,11 @@ class SpotifyService
         curl_close($ch);
 
         return json_decode($result);
+        }catch (\Exception $e){
+
+            Log::info('Error make access token By Spotify' . $e->getMessage());
+
+        }
 
     }
 
@@ -87,12 +88,11 @@ class SpotifyService
     {
 
         $result = json_decode($result);
-
         $songs = null;
+
         foreach ($result->tracks->items as $key => $item) {
 
             $songs[] = array(
-
                 "url"=> $item->uri,
                 "id"=> $item->id,
                 "songname"=> $item->name,
