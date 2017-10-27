@@ -16,12 +16,12 @@ class CreateSongsTable extends Migration
         Schema::create('songs', function (Blueprint $table) {
             $table->increments('id');
             $table->string('url');
-            $table->string('idspotify');
+            $table->string('idspotify')->nullable();
             $table->string('songname');
-            $table->string('artistid');
+            $table->string('artistid')->nullable();
             $table->string('artistname');
-            $table->string('albumid');
-            $table->string('albumname');
+            $table->string('albumid')->nullable();
+            $table->string('albumname')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

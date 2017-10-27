@@ -12,19 +12,21 @@ trait ResponseTraits
 {
 
 
-    public function sendResponse($result, $element)
+    public function sendResponse($result, $element , $message)
     {
 
         if ($result != null || !empty($result)) {
 
             $response[$element] = $result;
             $response['status'] = true;
+            $response['message'] = $message;
 
             return json_encode($response);
         }
 
         $response[$element] = "Songs no exits , or no found";
         $response['status'] = false;
+        $response['message'] = $message;
         return json_encode($response);
 
     }

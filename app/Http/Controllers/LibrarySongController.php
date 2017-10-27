@@ -24,14 +24,38 @@ class LibrarySongController extends Controller
     public function store(Request $request)
     {
 
-        if (trim(strtolower($request->import)) == "spotify" && isset($request->id)) {
+        if (trim(strtolower($request->import)) == "spotify" && isset($request->idSpotify)) {
 
             $spotify = new SpotifyService();
-            $result  = $spotify->trackDetails($request->id);
+            $result  = $spotify->trackDetails($request->idSpotify);
             $this->saveSongs($result);
-            return $this->sendResponse($result, 'songs');
+            return $this->sendResponse($result, 'songs' , 'Completed Import');
 
         }
+
+        $songs = $this->createNewSong($request->all());
+        if(is_array($songs)){
+
+            return $this->sendResponse($songs, 'songs' , 'Completed Created');
+
+        }
+
+        return $this->sendResponse(null, 'songs' , 'Missing Parameter: '.$songs);
+
+    }
+
+
+    public function show ($id){
+
+        $song = Song::find($id)->toArray();
+
+        if(is_array($song)){
+
+            return $this->sendResponse($song, 'songs' , 'Completed Search');
+
+        }
+
+        return $this->sendResponse(null, 'songs' , 'Missing Parameter: '.$song);
 
 
     }
@@ -63,6 +87,25 @@ class LibrarySongController extends Controller
             Log::info('Error save songs ' . $e->getMessage());
 
         }
+
+    }
+
+    private function createNewSong($params){
+
+        $requires = array(
+            "url","songname","artistname",
+        );
+        foreach ($requires as $require){
+
+            if(!array_key_exists($require , $params)){
+
+                return $require;
+            }
+
+        }
+        $song = Song::create($params);
+
+        return $song->toArray();
 
     }
 

@@ -20,6 +20,7 @@ class Song extends Model
     protected $dates = ['deleted_at'];
 
     public $fillable = [
+        'id',
         'url',
         'idspotify',
         'songname',
