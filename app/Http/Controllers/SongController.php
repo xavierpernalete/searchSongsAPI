@@ -15,6 +15,7 @@ class SongController extends Controller
     use ResponseTraits;
 
     public function index(Request $request){
+
        try{
 
         $spotify    = new SpotifyService();
@@ -28,6 +29,7 @@ class SongController extends Controller
 
        }
     }
+
 
 
 

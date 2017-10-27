@@ -18,4 +18,5 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::resource('songs', 'SongController');
+Route::resource('library-songs', 'LibrarySongController');
 Route::get('callback', 'SesionsController@callBack');
