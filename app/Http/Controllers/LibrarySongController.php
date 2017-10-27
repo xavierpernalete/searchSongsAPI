@@ -22,7 +22,7 @@ class LibrarySongController extends Controller
 
             if (is_array($songs) && !empty($songs)) {
 
-                return $this->sendResponse($songs, 'songs', 'Completed Created');
+                return $this->sendResponse($songs, 'songs', 'Completed Search');
 
             }
 
@@ -67,10 +67,9 @@ class LibrarySongController extends Controller
     public function show($id)
     {
         try {
-            $song = Song::find($id)->toArray();
-
-            if (is_array($song)) {
-
+            $song = Song::find($id);
+            if (!empty($song)) {
+                $song = $song->toArray();
                 return $this->sendResponse($song, 'songs', 'Completed Search');
 
             }
