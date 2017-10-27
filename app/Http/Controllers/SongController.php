@@ -21,7 +21,7 @@ class SongController extends Controller
         $spotify    = new SpotifyService();
         $response  = $spotify->searchTrack($request->all());
 
-        return $this->sendResponse($response , 'songs');
+        return $this->sendResponse($response , 'songs' , "Complete Search");
 
        }catch (\Exception $e){
 
