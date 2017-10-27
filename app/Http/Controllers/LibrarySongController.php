@@ -83,6 +83,29 @@ class LibrarySongController extends Controller
 
     }
 
+    public function update($id ,Request $request)
+    {
+
+        try {
+            $song = Song::find($id);
+
+            if (empty($song)) {
+
+                return $this->sendResponse(null, 'songs', 'Song no exits ');
+
+            }
+
+            $song->update($request->all());
+
+            return $this->sendResponse($song, 'songs', 'Completed Deleted');
+
+        } catch (\Exception $e) {
+
+            Log::info('Error deleted songs ' . $e->getMessage());
+        }
+
+    }
+
     public function destroy($id)
     {
 
